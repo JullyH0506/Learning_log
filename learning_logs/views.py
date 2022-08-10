@@ -6,22 +6,22 @@ from .models import Topic, Entry
 from .forms import TopicForm, EntryForm
 
 def index(request):
-	"""Домашняя страница приложения Learning Log"""
+	"""The home page for Learning Log."""
 	return render(request, 'learning_logs/index.html')
 
 @login_required
 def topics(request):
-	"""Выводит список тем."""
+	"""Show all topics."""
 	topics = Topic.objects.filter(owner=request.user).order_by('date_added')
 	context = {'topics': topics}
 	return render(request, 'learning_logs/topics.html', context)
 
 @login_required
 def topic(request, topic_id):
-	"""Выводит одну тему и все ее записи."""
+	"""Show a single topic and all its entries."""
 	topic = get_object_or_404(Topic, id=topic_id)
 
-	# Проверка того, что тема принадлежит текущему пользователю.
+	# Make sure the topic belongs to the current user.
 	check_topic_owner(topic, request)
 
 	entries = topic.entry_set.order_by('-date_added')
@@ -30,12 +30,12 @@ def topic(request, topic_id):
 
 @login_required
 def new_topic(request):
-	"""Определяет новую тему."""
+	"""Add a new topic."""
 	if request.method != 'POST':
-		# Данные не отправлялись; создается пустая форма.
+		# No data submitted; create a blank form.
 		form = TopicForm()
 	else:
-		# Отправить данные POST; обработать данные.
+		# POST data submitted; process data.
 		form = TopicForm(data=request.POST)
 		if form.is_valid():
 			new_topic = form.save(commit=False)
@@ -43,20 +43,20 @@ def new_topic(request):
 			new_topic.save()
 			return redirect('learning_logs:topics')
 
-	# Вывести пустую или недействительную форму.
+	# Display a blank or invalid form.
 	context = {'form': form}
 	return render(request, 'learning_logs/new_topic.html', context)
 
 @login_required
 def new_entry(request, topic_id):
-	"""Добавляет новою запись по конкретной теме."""
+	"""Add a new entry for a particular topic."""
 	topic = get_object_or_404(Topic, id=topic_id)
 	check_topic_owner(topic, request)
 	if request.method != 'POST':
-		# Данные не отправляются; создается пустая форма.
+		# No data submitted; create a blank form.
 		form = EntryForm()
 	else:
-		# Отправлены данные POST; обработать данные.
+		# POST data submitted; process data.
 		form = EntryForm(data=request.POST)
 		if form.is_valid():
 			new_entry = form.save(commit=False)
@@ -64,7 +64,7 @@ def new_entry(request, topic_id):
 			new_entry.save()
 			return redirect('learning_logs:topic', topic_id=topic_id)
 
-	# Вывести пустую или недействительную форму.
+	# Display a blank or invalid form.
 	context = {'topic': topic, 'form': form}
 	return render(request, 'learning_logs/new_entry.html', context)
 
